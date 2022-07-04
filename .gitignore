@@ -1,0 +1,6 @@
+__pycache__/
+.mypy_cache/
+.idea/
+.ipynb_checkpoints
+*env/
+.*env
