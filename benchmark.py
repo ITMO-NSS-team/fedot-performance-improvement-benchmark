@@ -15,7 +15,6 @@ from fedot.core.data.data import InputData
 from fedot.core.data.data_split import train_test_data_setup
 from fedot.core.optimisers.opt_history import OptHistory
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
-from fedot.core.utils import fedot_project_root
 from matplotlib import colors, pyplot as plt
 
 from core import get_dataset
@@ -119,7 +118,8 @@ def use_cache_check(problem: str, train_data, test_data, n_jobs: int = 1, test_p
     preset = 'fast_train'
     fedot_params = {
         'problem': problem, 'preset': preset, 'with_tuning': False,
-        'verbose_level': logging.NOTSET, 'n_jobs': n_jobs, 'seed': 42
+        'logging_level': logging.NOTSET, 'logging_level_opt': logging.NOTSET,
+        'n_jobs': n_jobs, 'seed': 42
     }
     timeouts = [1, 2, 3, 4, 5]
     for use_cache in [True, False]:
@@ -146,7 +146,8 @@ def compare_one_process_to_many(problem: str, train_data, test_data, n_jobs: int
     plot_labels = {1: 'one process', n_jobs: f'{n_jobs} processes'}
     fedot_params = {
         'problem': problem, 'preset': 'fast_train', 'with_tuning': False,
-        'verbose_level': logging.NOTSET, 'seed': 42
+        'logging_level': logging.NOTSET, 'logging_level_opt': logging.NOTSET,
+        'seed': 42
     }
     timeouts = [1, 2, 3, 4, 5]
     for _n_jobs in [1, n_jobs]:
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     examples_dct.update({
         1: (dummy_time_check,),
         2: (use_cache_check, problem, train_data, test_data, 1, False),
-        3: (compare_one_process_to_many, problem, train_data, test_data, -1, True)
+        3: (compare_one_process_to_many, problem, train_data, test_data, -1, False)
     })
     benchmark_number = 2
     func, *args = examples_dct[benchmark_number]
