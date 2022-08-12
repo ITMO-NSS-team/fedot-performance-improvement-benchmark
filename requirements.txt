@@ -1,5 +1,5 @@
-https://github.com/nccr-itmo/FEDOT/archive/caching_preprocessors.zip
+https://github.com/nccr-itmo/FEDOT/archive/master.zip#egg=fedot[extra]
 matplotlib==3.0.2
 numpy==1.21.6
 pandas==1.2.5
-scikit_learn==1.1.1
+scikit_learn
