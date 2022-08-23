@@ -118,7 +118,7 @@ def use_cache_check(problem: str, train_data, test_data, n_jobs: int = 1, test_p
     preset = 'fast_train'
     fedot_params = {
         'problem': problem, 'preset': preset, 'with_tuning': False,
-        'logging_level': logging.NOTSET, 'logging_level_opt': logging.NOTSET,
+        'logging_level': logging.CRITICAL, 'logging_level_opt': logging.CRITICAL, 'show_progress': False,
         'n_jobs': n_jobs, 'seed': 42
     }
     timeouts = [1, 2, 3, 4, 5]
@@ -146,7 +146,7 @@ def compare_one_process_to_many(problem: str, train_data, test_data, n_jobs: int
     plot_labels = {1: 'one process', n_jobs: f'{n_jobs} processes'}
     fedot_params = {
         'problem': problem, 'preset': 'fast_train', 'with_tuning': False,
-        'logging_level': logging.NOTSET, 'logging_level_opt': logging.NOTSET,
+        'logging_level': logging.CRITICAL, 'logging_level_opt': logging.CRITICAL, 'show_progress': False,
         'seed': 42
     }
     timeouts = [1, 2, 3, 4, 5]
