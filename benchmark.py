@@ -83,12 +83,15 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
         time = 0.
         mean_range = 3
         cache_effectiveness = collections.Counter()
+        fitness = collections.Counter()
         for _ in range(mean_range):
             train_data_tmp = deepcopy(train_data)
             start_time = timeit.default_timer()
             auto_model = Fedot(**params, timeout=timeout)
             auto_model.fit(features=train_data_tmp)
             time += (timeit.default_timer() - start_time) / 60
+            auto_model.predict_proba(features=test_data_path)
+            fitness += auto_model.get_metrics()
             c_pipelines += _count_pipelines(auto_model.history)
             if params['use_pipelines_cache'] and auto_model.api_composer.pipelines_cache.effectiveness_ratio:
                 cache_effectiveness += auto_model.api_composer.pipelines_cache.effectiveness_ratio
@@ -100,11 +103,12 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
         times.append(time)
         pipelines_count.append(c_pipelines)
         cache_effectiveness = {k: v / mean_range for k, v in cache_effectiveness.items()}
+        fitness = {k: v / mean_range for k, v in fitness.items()}
 
         print((
             f'\tTimeout: {timeout}'
             f', number of pipelines: {c_pipelines}, elapsed time: {time:.3f}'
-            f', cache effectiveness: {cache_effectiveness}'
+            f', fitness: {fitness}'
         ))
     return times, pipelines_count
 
