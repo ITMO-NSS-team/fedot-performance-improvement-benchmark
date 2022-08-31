@@ -114,10 +114,10 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
     return times, pipelines_count
 
 
-def use_cache_check(problem: str, train_data: InputData, test_data: InputData,
-                    n_jobs: int = 1, test_preprocessing: bool = False):
+def test_cache(problem: str, train_data: InputData, test_data: InputData,
+                    n_jobs: int = 1, test_both: bool = False, test_pipelines: bool = True):
     """
-    Performs experiment to show how caching pipelines operations helps in fitting FEDOT model
+    Performs experiment to show how caching helps in fitting FEDOT model
     """
     pipelines_count, times = [{False: [], True: []} for _ in range(2)]
     plot_labels = {False: 'without cache', True: 'with cache'}
@@ -127,27 +127,34 @@ def use_cache_check(problem: str, train_data: InputData, test_data: InputData,
         'logging_level': logging.CRITICAL, 'show_progress': False,
         'n_jobs': n_jobs, 'seed': 42
     }
-    timeouts = [1, 2, 3, 4, 5]
+    timeouts = [1, 2, 3, 4]
     for use_cache in [True, False]:
         print(f'Using cache: {use_cache}')
-        if test_preprocessing:
-            fedot_params['use_pipelines_cache'] = False
-            fedot_params['use_preprocessing_cache'] = use_cache
-        else:
+        if test_both:
+            fedot_params['use_pipelines_cache'] = fedot_params['use_preprocessing_cache'] = use_cache
+        elif test_pipelines:
             fedot_params['use_pipelines_cache'] = use_cache
             fedot_params['use_preprocessing_cache'] = False
+        else:
+            fedot_params['use_pipelines_cache'] = False
+            fedot_params['use_preprocessing_cache'] = use_cache
         _times, _pipelines_count = _run(timeouts, train_data, test_data, fedot_params)
         times[use_cache] = _times
         pipelines_count[use_cache] = _pipelines_count
-    _show_performance_plot(f'Cache performance with n_jobs={n_jobs}', timeouts, pipelines_count, times, plot_labels)
+    title = f'Cache performance with n_jobs={n_jobs}'
+    if not test_both:
+        if test_pipelines:
+            title = 'Pipelines ' + title[0].lower() + title[1:]
+        else:
+            title = 'Preprocessing ' + title[0].lower() + title[1:]
+    _show_performance_plot(title, timeouts, pipelines_count, times, plot_labels)
 
 
-def use_log_check(problem: str, train_data: InputData, test_data: InputData, n_jobs: int = 1):
+def test_log(problem: str, train_data: InputData, test_data: InputData, n_jobs: int = 1):
     """
     Performs experiment to show how logger mp synchronization influences FEDOT performance
     """
     pipelines_count, times = [{False: [], True: []} for _ in range(2)]
-    # plot_labels = {True: 'mp logger disabled'}
     plot_labels = {False: 'mp logger disabled', True: 'mp logger enabled'}
     preset = 'fast_train'
     fedot_params = {
@@ -165,8 +172,8 @@ def use_log_check(problem: str, train_data: InputData, test_data: InputData, n_j
     _show_performance_plot(f'Log performance with n_jobs={n_jobs}', timeouts, pipelines_count, times, plot_labels)
 
 
-def compare_one_process_to_many(problem: str, train_data, test_data, n_jobs: int = -1,
-                                test_preprocessing: bool = False):
+def compare_cache_sp_vs_mp(problem: str, train_data, test_data, n_jobs: int = -1,
+                           test_both: bool = False, test_pipelines: bool = True):
     """
     Performs experiment to show how one-process FEDOT cacher compares to the multiprocessed
     """
@@ -175,24 +182,31 @@ def compare_one_process_to_many(problem: str, train_data, test_data, n_jobs: int
     plot_labels = {1: 'one process', n_jobs: f'{n_jobs} processes'}
     fedot_params = {
         'problem': problem, 'preset': 'fast_train', 'with_tuning': False,
-        'logging_level': logging.CRITICAL, 'logging_level_opt': logging.CRITICAL, 'show_progress': False,
+        'logging_level': logging.CRITICAL, 'show_progress': False,
         'seed': 42
     }
     timeouts = [1, 2, 3, 4, 5]
     for _n_jobs in [1, n_jobs]:
         print(f'Processes used: {_n_jobs}')
-        if test_preprocessing:
-            fedot_params['use_pipelines_cache'] = False
-            fedot_params['use_preprocessing_cache'] = True
-        else:
+        if test_both:
+            fedot_params['use_pipelines_cache'] = fedot_params['use_preprocessing_cache'] = True
+        elif test_pipelines:
             fedot_params['use_pipelines_cache'] = True
             fedot_params['use_preprocessing_cache'] = False
+        else:
+            fedot_params['use_pipelines_cache'] = False
+            fedot_params['use_preprocessing_cache'] = True
         fedot_params['n_jobs'] = _n_jobs
         _times, _pipelines_count = _run(timeouts, train_data, test_data, fedot_params)
         times[_n_jobs] = _times
         pipelines_count[_n_jobs] = _pipelines_count
-    _show_performance_plot(f'Cache performance comparison between one process and {n_jobs}', timeouts, pipelines_count,
-                           times, plot_labels)
+    title = f'Cache performance comparison between one process and {n_jobs}'
+    if not test_both:
+        if test_pipelines:
+            title = 'Pipelines ' + title[0].lower() + title[1:]
+        else:
+            title = 'Preprocessing ' + title[0].lower() + title[1:]
+    _show_performance_plot(title, timeouts, pipelines_count, times, plot_labels)
 
 
 if __name__ == "__main__":
@@ -213,9 +227,9 @@ if __name__ == "__main__":
     examples_dct = defaultdict(lambda: (lambda: print('Wrong example number option'),))
     examples_dct.update({
         1: (dummy_time_check,),
-        2: (use_cache_check, problem, train_data, test_data, -1, False),
-        3: (compare_one_process_to_many, problem, train_data, test_data, -1, False),
-        4: (use_log_check, problem, train_data, test_data, -1)
+        2: (test_cache, problem, train_data, test_data, 1, False),
+        3: (compare_cache_sp_vs_mp, problem, train_data, test_data, -1, False),
+        4: (test_log, problem, train_data, test_data, -1)
     })
     benchmark_number = 2
     func, *args = examples_dct[benchmark_number]
