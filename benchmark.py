@@ -81,7 +81,7 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
     for timeout in timeouts:
         c_pipelines = 0.
         time = 0.
-        mean_range = 3
+        mean_range = 5
         cache_effectiveness = collections.Counter()
         fitness = collections.Counter()
         for _ in range(mean_range):
@@ -90,7 +90,7 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
             auto_model = Fedot(**params, timeout=timeout)
             auto_model.fit(features=train_data_tmp)
             time += (timeit.default_timer() - start_time) / 60
-            auto_model.predict_proba(features=test_data_path)
+            auto_model.predict_proba(features=test_data)
             fitness += auto_model.get_metrics()
             c_pipelines += _count_pipelines(auto_model.history)
             if params.get('use_pipelines_cache') and auto_model.api_composer.pipelines_cache.effectiveness_ratio:
@@ -115,7 +115,7 @@ def _run(timeouts: List[int], train_data: InputData, test_data: InputData, param
 
 
 def test_cache(problem: str, train_data: InputData, test_data: InputData,
-                    n_jobs: int = 1, test_both: bool = False, test_pipelines: bool = True):
+               n_jobs: int = 1, test_both: bool = False, test_pipelines: bool = True):
     """
     Performs experiment to show how caching helps in fitting FEDOT model
     """
@@ -127,7 +127,7 @@ def test_cache(problem: str, train_data: InputData, test_data: InputData,
         'logging_level': logging.CRITICAL, 'show_progress': False,
         'n_jobs': n_jobs, 'seed': 42
     }
-    timeouts = [1, 2, 3, 4]
+    timeouts = [1, 2, 3, 4, 5]
     for use_cache in [True, False]:
         print(f'Using cache: {use_cache}')
         if test_both:
@@ -215,9 +215,9 @@ if __name__ == "__main__":
         train_data_path = 'core/data/scoring/scoring_train.csv'
         test_data_path = 'core/data/scoring/scoring_test.csv'
         train_data = InputData.from_csv(train_data_path,
-                                        task=Task(TaskTypesEnum.classification)).subset_range(0, 4000)
+                                        task=Task(TaskTypesEnum.classification))
         test_data = InputData.from_csv(test_data_path,
-                                       task=Task(TaskTypesEnum.classification)).subset_range(0, 4000)
+                                       task=Task(TaskTypesEnum.classification))
     elif problem == 'regression':
         data_path = 'core/data/cholesterol/cholesterol.csv'
         data = InputData.from_csv(data_path,
@@ -227,8 +227,8 @@ if __name__ == "__main__":
     examples_dct = defaultdict(lambda: (lambda: print('Wrong example number option'),))
     examples_dct.update({
         1: (dummy_time_check,),
-        2: (test_cache, problem, train_data, test_data, 1, False),
-        3: (compare_cache_sp_vs_mp, problem, train_data, test_data, -1, False),
+        2: (test_cache, problem, train_data, test_data, 1, True, True),
+        3: (compare_cache_sp_vs_mp, problem, train_data, test_data, -1, False, True),
         4: (test_log, problem, train_data, test_data, -1)
     })
     benchmark_number = 2
