@@ -1,5 +1,6 @@
 # Description
-Originally used for showing improvements in performance while using different caching techniques.
+This repository is related to paper "Improvement of Computational Performance for Evolutionary AutoML in Heterogeneous
+Environment". It used for analysis of improvements in performance while using different performance improvement techniques: caching, parallelization, remote and heterogeneous evaluation.
 
 Tests primarily number of correctly evaluated pipelines for a different training time. Uses caching techniques via relational databases for loading/saving pipelines and data preprocessors.
 
