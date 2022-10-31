@@ -17,7 +17,7 @@ from fedot.core.optimisers.opt_history import OptHistory
 from fedot.core.repository.tasks import Task, TaskTypesEnum, TsForecastingParams
 from matplotlib import colors, pyplot as plt
 
-from core import get_dataset
+from cache import get_dataset
 
 
 def _count_pipelines(opt_history: Optional[OptHistory]) -> int:
@@ -212,14 +212,14 @@ def compare_cache_sp_vs_mp(problem: str, train_data, test_data, n_jobs: int = -1
 if __name__ == "__main__":
     problem = 'classification'
     if problem == 'classification':
-        train_data_path = 'core/data/scoring/scoring_train.csv'
-        test_data_path = 'core/data/scoring/scoring_test.csv'
+        train_data_path = 'data/scoring/scoring_train.csv'
+        test_data_path = 'data/scoring/scoring_test.csv'
         train_data = InputData.from_csv(train_data_path,
                                         task=Task(TaskTypesEnum.classification))
         test_data = InputData.from_csv(test_data_path,
                                        task=Task(TaskTypesEnum.classification))
     elif problem == 'regression':
-        data_path = 'core/data/cholesterol/cholesterol.csv'
+        data_path = 'data/cholesterol/cholesterol.csv'
         data = InputData.from_csv(data_path,
                                   task=Task(TaskTypesEnum.regression))
         train_data, test_data = train_test_data_setup(data)

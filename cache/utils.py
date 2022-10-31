@@ -26,7 +26,7 @@ def get_ts_data(n_steps=80, forecast_length=5):
     :param n_steps: number of elements in time series to take
     :param forecast_length: the length of forecast
     """
-    file_path = 'core/data/simple_time_series.csv'
+    file_path = 'cache/data/simple_time_series.csv'
     df = pd.read_csv(file_path)
 
     time_series = np.array(df['sea_height'])[:n_steps]
